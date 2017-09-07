@@ -1,0 +1,30 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+
+<h:head>
+    <title>JSF Lucene Example</title>
+</h:head>
+<h:body>
+
+    #{welcome.s3}
+
+    <h:form id="myForm">
+
+        <h:panelGrid columns="1" border="0">
+
+            <h:panelGroup id="statusBlock">
+                <h:inputTextarea style="height: 250;width: 750" value="#{welcome.s2}" />
+            </h:panelGroup>
+            <h:panelGroup>
+                <h:inputText style="width: 250" value="#{welcome.s1}" />
+                <h:commandButton value="Listele">
+                    <f:ajax execute="myForm" render="statusBlock" />
+                </h:commandButton>
+            </h:panelGroup>
+        </h:panelGrid>
+    </h:form>
+
+</h:body>
+</html>
