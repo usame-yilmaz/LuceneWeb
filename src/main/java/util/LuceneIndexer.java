@@ -1,4 +1,4 @@
-package jsf;
+package util;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -24,21 +24,18 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 
-public class LuceneIndexer {
+public final class LuceneIndexer {
 
     public static void main(String[] args) throws Exception {
 
-        String indexDir = "C:/index/";
-        File dataDir = new File("C:/Users/uyilmaz/IdeaProjects/usame_test/test");
-        String suffix = "docx";
-
-        LuceneIndexer indexer = new LuceneIndexer();
+        String indexDir = LuceneParameters.LUCENE_INDEX_DIRECTORY;
+        File dataDir = new File(LuceneParameters.LUCENE_SOURCE_DIRECTORY);
+        String suffix = "";
 
         Instant first=Instant.now(),second;
         int numIndex=0;
-//        for(int i=0;i<1000;i++) {
-            numIndex = indexer.index(indexDir, dataDir, suffix);
-//        }
+        numIndex = LuceneIndexer.index(indexDir, dataDir, suffix);
+
         second = Instant.now();
         Duration duration = Duration.between(first, second);
 
@@ -47,7 +44,7 @@ public class LuceneIndexer {
 
     }
 
-    public int index(String indexDir, File dataDir, String suffix) throws Exception {
+    public static int index(String indexDir, File dataDir, String fileName) throws Exception {
 
         IndexWriterConfig config = new IndexWriterConfig(new StandardAnalyzer());
 
@@ -56,9 +53,9 @@ public class LuceneIndexer {
                 config);
 
         // reset indexes
-        indexWriter.deleteAll();
+        //indexWriter.deleteAll();
 
-        indexDirectory(indexWriter, dataDir, suffix);
+        indexDirectory(indexWriter, dataDir, fileName);
 
         int numIndexed = indexWriter.maxDoc();
 
@@ -70,30 +67,33 @@ public class LuceneIndexer {
 
     }
 
-    private void indexDirectory(IndexWriter indexWriter, File dataDir,
-                                String suffix) throws IOException {
+    // if filename not specified, create lucene indexes for whole directory recursively
+    private static void indexDirectory(IndexWriter indexWriter, File dataDir,
+                                String fileName) throws IOException {
 
         File[] files = dataDir.listFiles();
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
             if (f.isDirectory()) {
-                indexDirectory(indexWriter, f, suffix);
+                indexDirectory(indexWriter, f, fileName);
             } else {
-                indexFileWithIndexWriter(indexWriter, f, suffix);
+                indexFileWithIndexWriter(indexWriter, f, fileName);
             }
         }
 
     }
 
-    private void indexFileWithIndexWriter(IndexWriter indexWriter, File f,
-                                          String suffix) throws IOException {
+    private static void indexFileWithIndexWriter(IndexWriter indexWriter, File f,
+                                          String fileName) throws IOException {
 
         if (f.isHidden() || f.isDirectory() || !f.canRead() || !f.exists()) {
             return;
         }
-//        if (suffix != null && !f.getName().endsWith(suffix)) {
-//            return;
-//        }
+
+        // If filename specified, index only that file - skip others
+        if ( !fileName.isEmpty() && !fileName.equalsIgnoreCase(f.getName())) {
+            return;
+        }
 
         // Apache Tika Parsing
         Metadata metadata = new Metadata();
@@ -114,11 +114,10 @@ public class LuceneIndexer {
         }
 
         String text = handler.toString();
-        String fileName = f.getName();
+// End Apache Tika Parsing
 
         Document doc = new Document();
         doc.add(new TextField("contents", text, Field.Store.YES));
-        // End Apache Tika Parsing
 
 
 //        Document doc = new Document();

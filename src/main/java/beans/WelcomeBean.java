@@ -1,4 +1,8 @@
-package jsf;
+package beans;
+
+import util.LuceneIndexer;
+import util.LuceneParameters;
+import util.LuceneSearcher;
 
 import java.io.File;
 import java.io.Serializable;
@@ -30,12 +34,11 @@ public class WelcomeBean implements Serializable{
 
     public String getS2() throws Exception {
 
-        String indexDir = "c:/index/";
+        String indexDir = LuceneParameters.LUCENE_INDEX_DIRECTORY;
         //String query = "ReactJS";
         int hits = 10000;
         System.out.println("Search for:"+ s1);
-        LuceneSearcher searcher = new LuceneSearcher();
-        s2 = searcher.searchIndex(indexDir, s1, hits);
+        s2 = LuceneSearcher.searchIndex(indexDir, s1, hits);
         return s2;
     }
 
@@ -45,16 +48,16 @@ public class WelcomeBean implements Serializable{
 
     public String getS3() throws Exception {
 
-        String indexDir = "C:/index/";
-        File dataDir = new File("C:/Users/uyilmaz/IdeaProjects/usame_test/test");
-        String suffix = "docx";
+        String indexDir = LuceneParameters.LUCENE_INDEX_DIRECTORY;
+        File dataDir = new File(LuceneParameters.LUCENE_SOURCE_DIRECTORY);
+        String filename = "";
         StringBuilder sb = new StringBuilder();
-        LuceneIndexer indexer = new LuceneIndexer();
 
         Instant first=Instant.now(),second;
         int numIndex=0;
 
-        numIndex = indexer.index(indexDir, dataDir, suffix);
+        // initial indexing of all files - commented out
+        // numIndex = LuceneIndexer.index(indexDir, dataDir, filename);
 
         second = Instant.now();
         Duration duration = Duration.between(first, second);
